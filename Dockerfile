@@ -1,17 +1,14 @@
-FROM hiracchi/ubuntu-ja-supervisor
+FROM alpine:3.5
 MAINTAINER Toshiyuki HIRANO <hiracchi@gmail.com>
 
-# packages install
-RUN apt-get update && apt-get install -y \
-    isc-dhcp-server \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
 
-# RUN touch /var/db/dhcpd.leases
+RUN apk update \
+  && apk add --no-cache dhcp \
+  && rm -rf /var/cache/apk/* \
+  && mkdir -p /run/nginx
 
-# for service
-COPY supervisor.dhcpd.conf /etc/supervisor/conf.d/dhcp.conf
 
+COPY docker-entrypoint.sh /
 EXPOSE 67/udp
-ENTRYPOINT ["/usr/bin/supervisord"]
- 
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["/usr/sbin/dhcpd", "-cf", "/etc/dhcp/dhcpd.conf"] 
